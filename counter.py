@@ -13,7 +13,7 @@ graph = False
 
 my_list = []
 uniqueWords = []
-uniqueWordsFrequency = []
+uniqueWordsFrequency = [] #Commit test
 
 # Function to find if the word is already in the list and return a corresponding boolean value
 def inList(word):
