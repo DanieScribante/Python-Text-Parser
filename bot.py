@@ -13,7 +13,7 @@ import copy
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
-client = discord.Client()
+client = discord.Client(intents=discord.Intents.all())
 
 @client.event
 async def on_ready():
@@ -31,7 +31,7 @@ async def on_message(message):
         
         if message.content.startswith('??'):
             channel = message.channel
-            #await channel.send('watcha want')
+            await channel.send('watcha want')
             text = message.content
             text = text[2:] #This is to remove the identifier
             #await channel.send(text)
