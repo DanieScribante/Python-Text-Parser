@@ -2,13 +2,9 @@ import os
 import random
 import discord
 import io
-from dotenv import load_dotenv
-            
-import matplotlib
+from dotenv import load_dotenv    
 from matplotlib import pyplot as plt
-import matplotlib.ticker as mticker 
-import numpy as np
-import copy
+import textparser
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -23,15 +19,12 @@ async def on_ready():
 async def on_message(message):
     
     try:
-    
-        Freqplace = -1
-        
         if message.author == client.user:
             return
         
         if message.content.startswith('??'):
             channel = message.channel
-            await channel.send('watcha want')
+            # await channel.send('watcha want')
             text = message.content
             text = text[2:] #This is to remove the identifier
             #await channel.send(text)
@@ -61,6 +54,11 @@ async def on_message(message):
                 await channel.send("Example:")
                 await channel.send("//movie shrek 2 pie")
                 await channel.send("//movie shrek 2 bar")    
+                await channel.send("If you want to find the frequency of a spedific word in the movie script then type:")
+                await channel.send("//movie Movie_Choice word")
+                await channel.send("Example:")
+                await channel.send("//movie shrek donkey")
+                await channel.send("//movie bee bee")    
             
             elif textArray[0] == "options":
                 await channel.send("The following movies/books can be chosen:")
@@ -78,22 +76,6 @@ async def on_message(message):
                     await channel.send("Movie is not available")
                     return
                 
-                graph = True
-                data_stream = io.BytesIO()
-                #----------------
-                # Parameters
-                #movie = 'treasure.txt'
-                movie = textArray[1] + ".txt"
-                #percentage = 5
-                percentage = int(textArray[2])
-                graphType =  textArray[3]
-                #FreqWord = textArray[2]
-                #----------------
-
-                my_list = []
-                uniqueWords = []
-                uniqueWordsFrequency = []
-
                 # Function to find if the word is already in the list and return a corresponding boolean value
                 def inList(word):
                     for i in range(len(uniqueWords)):
@@ -127,184 +109,38 @@ async def on_message(message):
                                 uniqueWords[j], uniqueWords[j + 1] = uniqueWords[j + 1], uniqueWords[j]      
 
                 def getFrequency(word):
-                    #Freqplace = -1
+                    Freqplace = -1
                     for i in range(len(uniqueWords)):
                         if(uniqueWords[i] == word):
                             Freqplace = i
-                        else:
-                            Freqplace = -1
                             
-                    
+                    if Freqplace != -1:
+                        return "This word appears in the script " + str(uniqueWordsFrequency[Freqplace]) + " times.\n" + "This word is number " + str(Freqplace + 1) + " in the list of occurences."
+                    else:
+                        return "This word is not in this script."
+            
+                data_stream = io.BytesIO()
 
-                lineNum = 0
-                # Change the text file to any text file you want to parse. Make sure it is in the same folder as the code!
-                with open(movie, encoding='utf8') as f: # This loop will go through all the line in the text file sequentially
-                    lines = f.readlines() # list containing lines of file
-                    textInLine = [] # To store all the sords in the line
-                    #print(lineNum)
-                    lineNum =+ 1
+                movie = "Scripts/" +textArray[1] + ".txt"
+
+                my_list = []
+                uniqueWords = []
+                uniqueWordsFrequency = []
+
+                with open(movie, encoding='utf8') as f: 
+                    lines = f.readlines()
                     for line in lines:
-                        line = line.strip() # remove leading/trailing white spaces
+                        line = line.strip()
                         if line:
                             data = [item.strip() for item in line.split(' ')]
-
-                            my_list.append(data) # append dictionary to list
-
-                # code to clean up
-                for h in range(20):
-                    for i in range(len(my_list)):
-                        for j in range(len(my_list[i])):
-                            if(my_list[i][j] != ''):
-                                # End of word cleanup
-                                if(my_list[i][j][len(my_list[i][j]) - 1] == chr(44)): # ,
-                                    new = ""
-                                    for k in range(len(my_list[i][j]) - 1):
-                                        new = new + my_list[i][j][k]
-                                    if(len(new) > 0):
-                                        my_list[i][j] = new
-                                    
-                                if(my_list[i][j][len(my_list[i][j]) - 1] == chr(46)): # .
-                                    new = ""
-                                    for k in range(len(my_list[i][j]) - 1):
-                                        new = new + my_list[i][j][k]
-                                    if(len(new) > 0):
-                                        my_list[i][j] = new
-    
-                                if(my_list[i][j][len(my_list[i][j]) - 1] == chr(39)): # '
-                                    new = ""
-                                    for k in range(len(my_list[i][j]) - 1):
-                                        new = new + my_list[i][j][k]
-                                    if(len(new) > 0):
-                                        my_list[i][j] = new
-                                    
-                                if(my_list[i][j][len(my_list[i][j]) - 1] == chr(33)): # !
-                                    new = ""
-                                    for k in range(len(my_list[i][j]) - 1):
-                                        new = new + my_list[i][j][k]
-                                    if(len(new) > 0):
-                                        my_list[i][j] = new
-                                    
-                                if(my_list[i][j][len(my_list[i][j]) - 1] == chr(63)): # ?
-                                    new = ""
-                                    for k in range(len(my_list[i][j]) - 1):
-                                        new = new + my_list[i][j][k]
-                                    if(len(new) > 0):
-                                        my_list[i][j] = new
-                                    
-                                if(my_list[i][j][len(my_list[i][j]) - 1] == chr(59)): # ;
-                                    new = ""
-                                    for k in range(len(my_list[i][j]) - 1):
-                                        new = new + my_list[i][j][k]
-                                    if(len(new) > 0):
-                                        my_list[i][j] = new
-                                    
-                                if(my_list[i][j][len(my_list[i][j]) - 1] == chr(58)): # :
-                                    new = ""
-                                    for k in range(len(my_list[i][j]) - 1):
-                                        new = new + my_list[i][j][k]
-                                    if(len(new) > 0):
-                                        my_list[i][j] = new
-                                    
-                                if(my_list[i][j][len(my_list[i][j]) - 1] == chr(34)): # "
-                                    new = ""
-                                    for k in range(len(my_list[i][j]) - 1):
-                                        new = new + my_list[i][j][k]
-                                    if(len(new) > 0):
-                                        my_list[i][j] = new      
-                                    
-                                if(my_list[i][j][len(my_list[i][j]) - 1] == chr(125)): # }
-                                    new = ""
-                                    for k in range(len(my_list[i][j]) - 1):
-                                        new = new + my_list[i][j][k]
-                                    if(len(new) > 0):
-                                        my_list[i][j] = new        
-                                        
-                                if(my_list[i][j][len(my_list[i][j]) - 1] == chr(45)): # -
-                                    new = ""
-                                    for k in range(len(my_list[i][j]) - 1):
-                                        new = new + my_list[i][j][k]
-                                    if(len(new) > 0):
-                                        my_list[i][j] = new        
-                                        
-                                if(my_list[i][j][len(my_list[i][j]) - 1] == chr(8221)): # ”
-                                    new = ""
-                                    for k in range(len(my_list[i][j]) - 1):
-                                        new = new + my_list[i][j][k]
-                                    if(len(new) > 0):
-                                        my_list[i][j] = new 
-                                    
-                                if(my_list[i][j][len(my_list[i][j]) - 1] == chr(8230)): # …
-                                    new = ""
-                                    for k in range(len(my_list[i][j]) - 1):
-                                        new = new + my_list[i][j][k]
-                                    if(len(new) > 0):
-                                        my_list[i][j] = new 
-                                    
-                                # Start of word cleanup
-                                if(my_list[i][j][0] == chr(39)): # '
-                                    new = ""
-                                    for k in range(1, len(my_list[i][j]), 1):
-                                        new = new + my_list[i][j][k]
-                                    if(len(new) > 0):
-                                        my_list[i][j] = new 
-                                        
-                                if(my_list[i][j][0] == chr(34)): # ""
-                                    new = ""
-                                    for k in range(1, len(my_list[i][j]), 1):
-                                        new = new + my_list[i][j][k]
-                                    if(len(new) > 0):
-                                        my_list[i][j] = new 
-                                        
-                                if(my_list[i][j][0] == chr(92)): # \
-                                    new = ""
-                                    for k in range(1, len(my_list[i][j]), 1):
-                                        new = new + my_list[i][j][k]
-                                    if(len(new) > 0):
-                                        my_list[i][j] = new 
-                                    
-                                if(my_list[i][j][0] == chr(123)): # {
-                                    new = ""
-                                    for k in range(1, len(my_list[i][j]), 1):
-                                        new = new + my_list[i][j][k]
-                                    if(len(new) > 0):
-                                        my_list[i][j] = new 
-                                    
-                                if(my_list[i][j][0] == chr(45)): # -
-                                    new = ""
-                                    for k in range(1, len(my_list[i][j]), 1):
-                                        new = new + my_list[i][j][k]
-                                    if(len(new) > 0):
-                                        my_list[i][j] = new 
-                                    
-                                if(my_list[i][j][0] == chr(8220)): # “
-                                    new = ""
-                                    for k in range(1, len(my_list[i][j]), 1):
-                                        new = new + my_list[i][j][k]
-                                    if(len(new) > 0):
-                                        my_list[i][j] = new 
-                                
-                                if(my_list[i][j][0] == chr(8230)): # …
-                                    new = ""
-                                    for k in range(1, len(my_list[i][j]), 1):
-                                        new = new + my_list[i][j][k]
-                                    if(len(new) > 0):
-                                        my_list[i][j] = new
-
-                #print(my_list)
-
-                # code to make all letters lower case
-                for i in range(len(my_list)):
-                    for j in range(len(my_list[i])):
-                        my_list[i][j] = my_list[i][j].lower()
-                        
-                #print(my_list)
-
-                for i in range(len(my_list)):
-                    for j in range(len(my_list[i])):
-                        if(inList(my_list[i][j])):
-                            addFrequency(my_list[i][j])            
-                        else:
-                            addNew(my_list[i][j])
+                            my_list.append(data)
+                            
+                wordList = textparser.scriptParser(my_list)
+                for i in range(len(wordList)):
+                    if(inList(wordList[i])):
+                        addFrequency(wordList[i])            
+                    else:
+                        addNew(wordList[i])
                     
                 tempUniqueWordsPart = []
                 tempUniqueWordsFrequencyPart = []
@@ -323,67 +159,59 @@ async def on_message(message):
                 uniqueWords.clear()
                 uniqueWordsFrequency.clear()
 
-                uniqueWords = copy.deepcopy(tempUniqueWordsPart)
-                uniqueWordsFrequency = copy.deepcopy(tempUniqueWordsFrequencyPart)
+                uniqueWords = tempUniqueWordsPart[:]
+                uniqueWordsFrequency = tempUniqueWordsFrequencyPart[:]
 
                 bubbleSort() 
-
-                #print(uniqueWords) #x
-                #print(uniqueWordsFrequency) #y
-
-                # Change this word to query for more info
-                #getFrequency(FreqWord)
-
-                uniqueWordsPart = []
-                uniqueWordsFrequencyPart = []
-
-                #print(len(uniqueWords))
-
-                for i in range(int((len(uniqueWords)*(percentage/100)))):
-                    uniqueWordsPart.append(uniqueWords[i])
-                    uniqueWordsFrequencyPart.append(uniqueWordsFrequency[i])
+                
+                percentage = -1
+                
+                try:
+                    percentage = int(textArray[2])
+                except:    
+                    FreqWord = textArray[2]
                     
-                if graph:
-                    plt.figure(figsize=(12,12)) 
-                    if graphType == "bar":
-                        plt.bar(uniqueWordsPart, uniqueWordsFrequencyPart)
-                    elif graphType == "pie":    
-                        plt.pie(uniqueWordsFrequencyPart, labels=uniqueWordsPart, radius = 1.3, autopct='%1.1f%%', startangle=90)
-                    plt.xlabel('words',family='arial',size=1)
-                    plt.ylabel('frequency',family='arial',size=1)
-                    plt.gca().xaxis.set_tick_params(rotation=270)
-                    #plt.gca().xaxis.set_major_formatter(mticker.EngFormatter(unit='Hz',places=None,sep=" "))
-                    #plt.gca().yaxis.set_major_formatter(mticker.EngFormatter(unit='m',places=None,sep=" "))
-                    plt.savefig(data_stream, format='png', bbox_inches="tight", dpi = 80)
-                    plt.close()
-                    #plt.show()
 
-                    #print(np.c_[uniqueWordsPart, uniqueWordsFrequencyPart])
-                    
-                    ## Create file
-                    # Reset point back to beginning of stream
-                    data_stream.seek(0)
-                    chart = discord.File(data_stream, filename="Word_Frequency.png")
-                    
-                    embed = discord.Embed(title=movie, description="Frequency of every unique word in the chosen range.", color=0x00ff00)
-                    embed.set_image(url="attachment://Word_Frequency.png")
-                    
-                    await channel.send(embed=embed, file=chart)
-                    
-                #if(Freqplace != -1):
-                        #print("The word is in the position: " + str(place) + ".")
-                        #print("The word occurs: " + str(uniqueWordsFrequency[place]) + " times.")
-                        #await channel.send("The word is in the position: " + str(Freqplace) + ".")
-                        #await channel.send("The word occurs: " + str(uniqueWordsFrequency[Freqplace]) + " times.")
+                if percentage == -1:
+                    output = getFrequency(FreqWord)
+                    await channel.send(output)
+                else:
+                    graphType =  textArray[3]
+                    graph = True
+
+                    uniqueWordsPart = []
+                    uniqueWordsFrequencyPart = []
+
+                    for i in range(int((len(uniqueWords)*(percentage/100)))):
+                        uniqueWordsPart.append(uniqueWords[i])
+                        uniqueWordsFrequencyPart.append(uniqueWordsFrequency[i])
                         
-                #if(Freqplace == -1):
-                    #print("Can't find word.")
-                    #await channel.send("Can't find word.")
-                    
-                #await channel.send(uniqueWords[0])
-                #await channel.send(uniqueWords[1])
-                await channel.send("Amount of unique words:")
-                await channel.send(len(uniqueWords))
+                    if graph:
+                        plt.figure(figsize=(12,12)) 
+                        if graphType == "bar":
+                            plt.bar(uniqueWordsPart, uniqueWordsFrequencyPart)
+                        elif graphType == "pie":    
+                            plt.pie(uniqueWordsFrequencyPart, labels=uniqueWordsPart, radius = 1.3, autopct='%1.1f%%', startangle=90)
+                        plt.xlabel('words',family='arial',size=1)
+                        plt.ylabel('frequency',family='arial',size=1)
+                        plt.gca().xaxis.set_tick_params(rotation=270)
+                        plt.savefig(data_stream, format='png', bbox_inches="tight", dpi = 80)
+                        plt.close()
+
+                        #print(np.c_[uniqueWordsPart, uniqueWordsFrequencyPart])
+                        
+                        ## Create file
+                        # Reset point back to beginning of stream
+                        data_stream.seek(0)
+                        chart = discord.File(data_stream, filename="Word_Frequency.png")
+                        
+                        embed = discord.Embed(title=movie, description="Frequency of every unique word in the chosen range.", color=0x00ff00)
+                        embed.set_image(url="attachment://Word_Frequency.png")
+                        
+                        await channel.send(embed=embed, file=chart)
+                
+                    await channel.send("Amount of unique words:")
+                    await channel.send(len(uniqueWords))
     except:
         await channel.send("Unexpected error. Don't send that message again. Use the proper message structure.")
         
